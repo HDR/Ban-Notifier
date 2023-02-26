@@ -53,8 +53,6 @@ module.exports = {
                     Object.keys(guilds).forEach(function (key) {
                         try {
                             if (key !== interaction.guild.id) {
-                                console.log(user.id)
-                                console.log(client.guilds.cache.get(key).members.cache.has(user.id))
                                 if (client.guilds.cache.get(key).members.cache.has(user.id)) {
                                     client.guilds.cache.get(key).channels.cache.get(guilds[key]).send({embeds: [Embed]})
                                 }
