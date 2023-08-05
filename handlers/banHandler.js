@@ -4,18 +4,17 @@ const { REST }  = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v10');
 const guilds = require("../guilds.json");
 
-client.on(Events.GuildBanAdd, async e => {
+client.on(Events.GuildAuditLogEntryCreate, async (auditLog, Guild) => {
+    const { action, targetId, reason } = auditLog;
 
-    const logs = await e.guild.fetchAuditLogs({limit: 1, type: AuditLogEvent.MemberBanAdd});
-    if(logs.entries.first().executor.id !== client.user.id) {
-        const Embed = new EmbedBuilder().setColor('#ff2828').setTitle(`Banned User: ${e.user.tag}`);
-        if(e.reason === undefined) {
-            e.reason = 'None'
-        }
-        Embed.addFields({name: 'Reason Provided:', value: `${e.reason}`, inline: false}, {name: 'User ID:', value: `${e.user.id}`, inline: true})
-        const button = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('banHandler.share').setLabel('Share Ban').setStyle('Danger'))
-        e.guild.channels.cache.get(guilds[e.guild.id]).send({embeds: [Embed], components: [button]})
-    }
+    if (action !== AuditLogEvent.MemberBanAdd) return;
+    const bannedUser = await client.users.fetch(targetId);
+
+    const Embed = new EmbedBuilder().setColor('#ff2828').setTitle(`Banned User: ${bannedUser.tag}`);
+    Embed.addFields({name: 'Reason Provided:', value: `${reason}`, inline: false}, {name: 'User ID:', value: `${targetId}`, inline: true})
+    const button = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('banHandler.share').setLabel('Share Ban').setStyle('Danger'))
+    Guild.channels.cache.get(guilds[Guild.id]).send({embeds: [Embed], components: [button]})
+
 });
 
 module.exports = {
